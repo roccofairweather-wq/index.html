@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Console Hub</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Access Key Verification Screen -->
+    <div id="loginScreen" class="login-wrapper">
+        <div class="brand-logo">🔥 stormkiln</div>
+        
+        <!-- Error Popup Box -->
+        <div id="errorMsg" class="error-banner" style="display: none;">
+            ⚠️ Wrong key. Check it and try again.
+        </div>
+
+        <div class="auth-box">
+            <label>ENTER YOUR KEY</label>
+            <div class="input-row">
+                <!-- Change 'mysecret123' to any password you want below -->
+                <input type="password" id="accessKey" placeholder="••••••••" data-secret="mysecret123">
+                <button onclick="checkKey()">➔</button>
+            </div>
+        </div>
+        <p class="footer-note">Whoever sent you the link has the key.</p>
+    </div>
+
+    <!-- Main Portal Screen (Hidden until code matches) -->
+    <div id="mainPortal" class="portal-wrapper" style="display: none;">
+        <header>
+            <h1>🔥 Portal Dashboard</h1>
+            <p>Access granted. Select an application window.</p>
+        </header>
+        <main class="grid-layout">
+            <div class="app-card">
+                <h3>Google Search Mirror</h3>
+                <button onclick="launchApp('https://google.com')">Launch</button>
+            </div>
+            <div class="app-card">
+                <h3>Retro Arcade</h3>
+                <button onclick="launchApp('https://play2048.co')">Launch</button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Embedded Application Screen Wrapper -->
+    <div id="appContainer" class="app-overlay" style="display: none;">
+        <div class="app-window">
+            <button class="exit-btn" onclick="closeApp()">❌ Exit Window</button>
+            <iframe id="appFrame" src="" frameborder="0" allowfullscreen></iframe>
+        </div>
+    </div>
+
+    <script>
+        function checkKey() {
+            const inputField = document.getElementById('accessKey');
+            const enteredKey = inputField.value;
+            const correctKey = inputField.getAttribute('data-secret');
+            const errorBox = document.getElementById('errorMsg');
+
+            if (enteredKey === correctKey) {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainPortal').style.display = 'block';
+            } else {
+                errorBox.style.display = 'block';
+                inputField.value = '';
+            }
+        }
+
+        function launchApp(url) {
+            document.getElementById('appFrame').src = url;
+            document.getElementById('appContainer').style.display = 'flex';
+        }
+
+        function closeApp() {
+            document.getElementById('appContainer').style.display = 'none';
+            document.getElementById('appFrame').src = '';
+        }
+    </script>
+</body>
+</html>
