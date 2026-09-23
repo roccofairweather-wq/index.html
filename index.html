@@ -18,9 +18,9 @@
         </div>
 
         <div class="auth-box">
-            <label>ENTER YOUR NEW KEY</label>
+            <label>ENTER YOUR KEY</label>
             <div class="input-row">
-                <!-- Change 'mysecret123' to your new desired password right below -->
+                <!-- Access key is hardcoded to 'mysecret123' -->
                 <input type="password" id="accessKey" placeholder="••••••••" data-secret="mysecret123">
                 <button onclick="checkKey()">➔</button>
             </div>
@@ -32,21 +32,21 @@
     <div id="mainPortal" class="portal-wrapper" style="display: none;">
         <header>
             <h1>🔥 Portal Dashboard</h1>
-            <p>Access granted. Enter a URL below to browse unblocked.</p>
+            <p>Access granted. Enter a URL or search phrase below.</p>
         </header>
 
         <!-- Unblocked Proxy Search Bar -->
         <div class="search-section">
             <div class="search-box">
-                <input type="text" id="proxyUrl" placeholder="Enter URL here (e.g., instagram.com)..." onkeydown="if(event.key === 'Enter') launchProxy()">
-                <button onclick="launchProxy()">Browse Unblocked</button>
+                <input type="text" id="proxyUrl" placeholder="Enter URL or search term here..." onkeydown="if(event.key === 'Enter') launchProxy()">
+                <button onclick="launchProxy()">Search Unblocked</button>
             </div>
         </div>
 
         <main class="grid-layout">
             <div class="app-card">
-                <h3>Google Search</h3>
-                <button onclick="launchProxyDirect('https://google.com')">Launch Mirror</button>
+                <h3>DuckDuckGo Search</h3>
+                <button onclick="launchProxyDirect('https://duckduckgo.com')">Launch Mirror</button>
             </div>
             <div class="app-card">
                 <h3>Retro Arcade</h3>
@@ -64,24 +64,55 @@
     </div>
 
     <script>
-      function launchProxy() {
-    let url = document.getElementById('proxyUrl').value.trim();
-    if (!url) return;
+        function checkKey() {
+            const inputField = document.getElementById('accessKey');
+            const enteredKey = inputField.value;
+            const correctKey = inputField.getAttribute('data-secret');
+            const errorBox = document.getElementById('errorMsg');
 
-    // Check if the user typed a website domain link or just random text words
-    const isUrl = url.includes('.') && !url.includes(' ');
-
-    if (isUrl) {
-        // If it's a website, ensure it has the correct network protocols
-        if (!url.startsWith('http://') && !url.startsWith('https://')) {
-            url = 'https://' + url;
+            if (enteredKey === correctKey) {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainPortal').style.display = 'block';
+            } else {
+                errorBox.style.display = 'block';
+                inputField.value = '';
+            }
         }
-    } else {
-        // If it's text words, use DuckDuckGo instead of Google to bypass bot blocks!
-        url = 'https://duckduckgo.com' + encodeURIComponent(url);
-    }
-    
-    // Send it through your live Render proxy channel
-    const proxyEndpoint = window.location.origin + '/proxy/' + url;
-    launchApp(proxyEndpoint);
-}
+
+        function launchProxy() {
+            let url = document.getElementById('proxyUrl').value.trim();
+            if (!url) return;
+
+            // Determines if it is a website link or search terms
+            const isUrl = url.includes('.') && !url.includes(' ');
+
+            if (isUrl) {
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                    url = 'https://' + url;
+                }
+            } else {
+                // Routes text searches securely through DuckDuckGo HTML layout
+                url = 'https://duckduckgo.com?q=' + encodeURIComponent(url);
+            }
+            
+            const proxyEndpoint = window.location.origin + '/proxy/' + url;
+            launchApp(proxyEndpoint);
+        }
+
+        function launchProxyDirect(url) {
+            const proxyEndpoint = window.location.origin + '/proxy/' + url;
+            launchApp(proxyEndpoint);
+        }
+
+        function launchApp(url) {
+            document.getElementById('appFrame').src = url;
+            document.getElementById('appContainer').style.display = 'flex';
+        }
+
+        function closeApp() {
+            document.getElementById('appContainer').style.display = 'none';
+            document.getElementById('appFrame').src = '';
+        }
+    </script>
+</body>
+</html>
