@@ -64,24 +64,24 @@
     </div>
 
     <script>
-       function launchProxy() {
+      function launchProxy() {
     let url = document.getElementById('proxyUrl').value.trim();
     if (!url) return;
 
-    // Check if the user typed a web address or just a search term
+    // Check if the user typed a website domain link or just random text words
     const isUrl = url.includes('.') && !url.includes(' ');
 
     if (isUrl) {
-        // If it's a website layout, ensure it has http/https protocol
+        // If it's a website, ensure it has the correct network protocols
         if (!url.startsWith('http://') && !url.startsWith('https://')) {
             url = 'https://' + url;
         }
     } else {
-        // If it's regular text words, convert it into an unblocked Google search link!
-        url = 'https://google.com' + encodeURIComponent(url);
+        // If it's text words, use DuckDuckGo instead of Google to bypass bot blocks!
+        url = 'https://duckduckgo.com' + encodeURIComponent(url);
     }
     
-    // Routes the traffic safely through your live Render cloud proxy server endpoint
+    // Send it through your live Render proxy channel
     const proxyEndpoint = window.location.origin + '/proxy/' + url;
     launchApp(proxyEndpoint);
 }
