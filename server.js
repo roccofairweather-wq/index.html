@@ -1,69 +1,54 @@
 const express = require('express');
-const https = require('https');
-const http = require('http');
+const { createProxyMiddleware } = require('http-proxy-middleware');
 const path = require('path');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-
-// 1. Serve your frontend files (index.html, style.css)
+// Serve your custom login screen (index.html, style.css)
 app.use(express.static(__dirname));
 
-// 2. Native Unblocking Engine (Zero Middleware)
-app.get('/proxy/*', (req, res) => {
-    // Safely extract the target URL from the path
-    let targetUrl = req.params[0] + (req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : '');
+// Advanced rewriting proxy endpoint
+app.use('/proxy/:target*', (req, res, next) => {
+    let targetUrl = req.params.target + (req.params[0] || '') + (req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : '');
 
-    if (!targetUrl) {
-        return res.status(400).send('Please enter a valid website address.');
-    }
-
-    // Auto-attach HTTPS if missing
     if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
         targetUrl = 'https://' + targetUrl;
     }
 
-    try {
-        const urlObj = new URL(targetUrl);
-        const clientModule = urlObj.protocol === 'https:' ? https : http;
-
-        // Clone the original request headers but update the Host
-        const headers = { ...req.headers };
-        headers['host'] = urlObj.host;
-        // Disguise as a standard Chrome browser
-        headers['user-agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
-
-        const proxyReq = clientModule.request({
-            hostname: urlObj.hostname,
-            port: urlObj.port,
-            path: urlObj.pathname + urlObj.search,
-            method: req.method,
-            headers: headers
-        }, (proxyRes) => {
-            // Forward status code and clone headers
-            const responseHeaders = { ...proxyRes.headers };
+    const proxy = createProxyMiddleware({
+        target: targetUrl,
+        changeOrigin: true,
+        followRedirects: true,
+        secure: false,
+        pathRewrite: (path, req) => '', // Strips the /proxy prefix safely
+        onProxyReq: (proxyReq, req, res) => {
+            // Disguise the traffic completely as a normal desktop user
+            proxyReq.setHeader('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
+            proxyReq.setHeader('Referer', targetUrl);
+            proxyReq.setHeader('Origin', targetUrl);
+        },
+        onProxyRes: (proxyRes, req, res) => {
+            // Smash security filters that stop the site from loading inside your dashboard
+            delete proxyRes.headers['x-frame-options'];
+            delete proxyRes.headers['content-security-policy'];
+            delete proxyRes.headers['content-security-policy-report-only'];
             
-            // Forcefully strip out strict security policies blocking framing layouts
-            delete responseHeaders['x-frame-options'];
-            delete responseHeaders['content-security-policy'];
-            
-            res.writeHead(proxyRes.statusCode, responseHeaders);
-            proxyRes.pipe(res);
-        });
+            // Allow cookies to pass through securely
+            if (proxyRes.headers['set-cookie']) {
+                proxyRes.headers['set-cookie'] = proxyRes.headers['set-cookie'].map(cookie => 
+                    cookie.replace(/SameSite=Lax|SameSite=Strict/gi, 'SameSite=None').replace(/Secure/gi, '') + '; Secure; SameSite=None'
+                );
+            }
+        },
+        onError: (err, req, res) => {
+            res.status(500).send('Unblocker Error: This website layout is too complex for a standard relay.');
+        }
+    });
 
-        proxyReq.on('error', (err) => {
-            res.status(502).send('Proxy Connection Error: Unable to fetch page.');
-        });
-
-        req.pipe(proxyReq);
-    } catch (e) {
-        res.status(400).send('Invalid URL format.');
-    }
+    proxy(req, res, next);
 });
 
-// Force the app to listen globally across the 0.0.0.0 network
-app.listen(PORT, '0.0.0.0', () => {
-    console.log('🔥 Unblocker server is running on http://0.0.0');
+app.listen(PORT, () => {
+    console.log(`🔥 Advanced Unblocker running on port ${PORT}`);
 });
-
