@@ -60,23 +60,26 @@
         </div>
     </div>
 
-    <script>
-       function launchProxy() {
-    let url = document.getElementById('proxyUrl').value.trim();
-    if (!url) return;
-
-    const isUrl = url.includes('.') && !url.includes(' ');
-
-    if (isUrl) {
-        if (!url.startsWith('http://') && !url.startsWith('https://')) {
-            url = url; // Let the server handle the protocol addition
-        }
-    } else {
-        // Use a lightweight unblocked alternative search endpoint
-        url = '://duckduckgo.com' + encodeURIComponent(url);
-    }
+    function launchApp(url) {
+    const iframe = document.getElementById('appFrame');
     
-    // Direct target link calculation
-    const proxyEndpoint = window.location.origin + '/proxy/' + url;
-    launchApp(proxyEndpoint);
+    // Injects an asset handler into the iframe window to force styles to mount
+    iframe.src = url;
+    document.getElementById('appContainer').style.display = 'flex';
+    
+    iframe.onload = function() {
+        try {
+            const frameWindow = iframe.contentWindow;
+            const frameDoc = iframe.contentDocument || frameWindow.document;
+            
+            // Forces absolute base paths so assets fall back to Krunker's master network
+            if (url.includes('krunker.io')) {
+                let base = frameDoc.createElement('base');
+                base.href = 'https://krunker.io';
+                frameDoc.head.insertBefore(base, frameDoc.head.firstChild);
+            }
+        } catch(e) {
+            console.log("Cross-origin frame block skipped safely.");
+        }
+    };
 }
