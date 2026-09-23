@@ -18,9 +18,9 @@
         </div>
 
         <div class="auth-box">
-            <label>ENTER YOUR KEY</label>
+            <label>ENTER YOUR NEW KEY</label>
             <div class="input-row">
-                <!-- Change 'mysecret123' to any password you want below -->
+                <!-- Change 'mysecret123' to your new desired password right below -->
                 <input type="password" id="accessKey" placeholder="••••••••" data-secret="mysecret123">
                 <button onclick="checkKey()">➔</button>
             </div>
@@ -28,20 +28,29 @@
         <p class="footer-note">Whoever sent you the link has the key.</p>
     </div>
 
-    <!-- Main Portal Screen (Hidden until code matches) -->
+    <!-- Main Portal Screen -->
     <div id="mainPortal" class="portal-wrapper" style="display: none;">
         <header>
             <h1>🔥 Portal Dashboard</h1>
-            <p>Access granted. Select an application window.</p>
+            <p>Access granted. Enter a URL below to browse unblocked.</p>
         </header>
+
+        <!-- Unblocked Proxy Search Bar -->
+        <div class="search-section">
+            <div class="search-box">
+                <input type="text" id="proxyUrl" placeholder="Enter URL here (e.g., instagram.com)..." onkeydown="if(event.key === 'Enter') launchProxy()">
+                <button onclick="launchProxy()">Browse Unblocked</button>
+            </div>
+        </div>
+
         <main class="grid-layout">
             <div class="app-card">
-                <h3>Google Search Mirror</h3>
-                <button onclick="launchApp('https://google.com')">Launch</button>
+                <h3>Google Search</h3>
+                <button onclick="launchProxyDirect('https://google.com')">Launch Mirror</button>
             </div>
             <div class="app-card">
                 <h3>Retro Arcade</h3>
-                <button onclick="launchApp('https://play2048.co')">Launch</button>
+                <button onclick="launchProxyDirect('https://play2048.co')">Launch</button>
             </div>
         </main>
     </div>
@@ -68,6 +77,24 @@
                 errorBox.style.display = 'block';
                 inputField.value = '';
             }
+        }
+
+        function launchProxy() {
+            let url = document.getElementById('proxyUrl').value.trim();
+            if (!url) return;
+
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                url = 'https://' + url;
+            }
+            
+            // Routes the request safely through your backend node proxy tunnel endpoint
+            const proxyEndpoint = window.location.origin + '/proxy/' + url;
+            launchApp(proxyEndpoint);
+        }
+
+        function launchProxyDirect(url) {
+            const proxyEndpoint = window.location.origin + '/proxy/' + url;
+            launchApp(proxyEndpoint);
         }
 
         function launchApp(url) {
