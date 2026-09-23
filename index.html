@@ -61,62 +61,22 @@
     </div>
 
     <script>
-        // Simple, clean password verification
-        function checkKey() {
-            const enteredKey = document.getElementById('accessKey').value;
-            const errorBox = document.getElementById('errorMsg');
+       function launchProxy() {
+    let url = document.getElementById('proxyUrl').value.trim();
+    if (!url) return;
 
-            if (enteredKey === 'mysecret123') {
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('mainPortal').style.display = 'block';
-            } else {
-                errorBox.style.display = 'block';
-                document.getElementById('accessKey').value = '';
-            }
+    const isUrl = url.includes('.') && !url.includes(' ');
+
+    if (isUrl) {
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            url = url; // Let the server handle the protocol addition
         }
-
-        // Listens for Enter key on inputs
-        document.getElementById('accessKey').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') checkKey();
-        });
-        document.getElementById('proxyUrl').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') launchProxy();
-        });
-
-        function launchProxy() {
-            let searchInput = document.getElementById('proxyUrl').value.trim();
-            if (!searchInput) return;
-
-            let finalUrl = searchInput;
-            const isUrl = searchInput.includes('.') && !searchInput.includes(' ');
-
-            if (isUrl) {
-                if (!searchInput.startsWith('http://') && !searchInput.startsWith('https://')) {
-                    finalUrl = 'https://' + searchInput;
-                }
-            } else {
-                finalUrl = 'https://duckduckgo.com?q=' + encodeURIComponent(searchInput);
-            }
-            
-            // Sends search queries safely via Render routing
-            const proxyEndpoint = window.location.origin + '/proxy/' + encodeURIComponent(finalUrl);
-            launchApp(proxyEndpoint);
-        }
-
-        function launchProxyDirect(url) {
-            const proxyEndpoint = window.location.origin + '/proxy/' + encodeURIComponent(url);
-            launchApp(proxyEndpoint);
-        }
-
-        function launchApp(url) {
-            document.getElementById('appFrame').src = url;
-            document.getElementById('appContainer').style.display = 'flex';
-        }
-
-        function closeApp() {
-            document.getElementById('appContainer').style.display = 'none';
-            document.getElementById('appFrame').src = '';
-        }
-    </script>
-</body>
-</html>
+    } else {
+        // Use a lightweight unblocked alternative search endpoint
+        url = '://duckduckgo.com' + encodeURIComponent(url);
+    }
+    
+    // Direct target link calculation
+    const proxyEndpoint = window.location.origin + '/proxy/' + url;
+    launchApp(proxyEndpoint);
+}
