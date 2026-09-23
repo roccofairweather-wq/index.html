@@ -29,16 +29,16 @@ app.use('/proxy/:target*', (req, res, next) => {
             proxyReq.setHeader('Origin', targetUrl);
         },
         onProxyRes: (proxyRes, req, res) => {
-            // Smash security filters that stop the site from loading inside your dashboard
-            delete proxyRes.headers['x-frame-options'];
-            delete proxyRes.headers['content-security-policy'];
-            delete proxyRes.headers['content-security-policy-report-only'];
-            
-            // Allow cookies to pass through securely
-            if (proxyRes.headers['set-cookie']) {
-                proxyRes.headers['set-cookie'] = proxyRes.headers['set-cookie'].map(cookie => 
-                    cookie.replace(/SameSite=Lax|SameSite=Strict/gi, 'SameSite=None').replace(/Secure/gi, '') + '; Secure; SameSite=None'
-                );
+    // Strip security blockades completely
+    delete proxyRes.headers['x-frame-options'];
+    delete proxyRes.headers['content-security-policy'];
+    delete proxyRes.headers['content-security-policy-report-only'];
+    
+    // Force cross-origin resources to authorize loading into the iframe container
+    proxyRes.headers['Access-Control-Allow-Origin'] = '*';
+    proxyRes.headers['Access-Control-Allow-Headers'] = '*';
+}
+
             }
         },
         onError: (err, req, res) => {
