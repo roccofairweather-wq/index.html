@@ -111,6 +111,48 @@ header p {
     margin-bottom: 40px;
 }
 
+/* Unblocked Proxy Input Bar Section */
+.search-section {
+    margin-bottom: 40px;
+    width: 100%;
+}
+
+.search-box {
+    display: flex;
+    background-color: #121214;
+    border: 1px solid #2e2e33;
+    border-radius: 8px;
+    padding: 8px;
+    gap: 10px;
+}
+
+.search-box input {
+    background: none;
+    border: none;
+    color: white;
+    padding: 10px;
+    width: 100%;
+    font-size: 1rem;
+    outline: none;
+}
+
+.search-box button {
+    background-color: #ff6b4a;
+    color: white;
+    border: none;
+    padding: 0 20px;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+}
+
+.search-box button:hover {
+    background-color: #e05334;
+}
+
+/* App Grid Layout */
 .grid-layout {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
