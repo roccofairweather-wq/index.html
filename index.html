@@ -12,7 +12,6 @@
     <div id="loginScreen" class="login-wrapper">
         <div class="brand-logo">🔥 stormkiln</div>
         
-        <!-- Error Popup Box -->
         <div id="errorMsg" class="error-banner" style="display: none;">
             ⚠️ Wrong key. Check it and try again.
         </div>
@@ -20,8 +19,7 @@
         <div class="auth-box">
             <label>ENTER YOUR KEY</label>
             <div class="input-row">
-                <!-- Access key is hardcoded to 'mysecret123' -->
-                <input type="password" id="accessKey" placeholder="••••••••" data-secret="mysecret123">
+                <input type="password" id="accessKey" placeholder="••••••••">
                 <button onclick="checkKey()">➔</button>
             </div>
         </div>
@@ -35,10 +33,9 @@
             <p>Access granted. Enter a URL or search phrase below.</p>
         </header>
 
-        <!-- Unblocked Proxy Search Bar -->
         <div class="search-section">
             <div class="search-box">
-                <input type="text" id="proxyUrl" placeholder="Enter URL or search term here..." onkeydown="if(event.key === 'Enter') launchProxy()">
+                <input type="text" id="proxyUrl" placeholder="Enter URL or search term here...">
                 <button onclick="launchProxy()">Search Unblocked</button>
             </div>
         </div>
@@ -64,43 +61,50 @@
     </div>
 
     <script>
+        // Simple, clean password verification
         function checkKey() {
-            const inputField = document.getElementById('accessKey');
-            const enteredKey = inputField.value;
-            const correctKey = inputField.getAttribute('data-secret');
+            const enteredKey = document.getElementById('accessKey').value;
             const errorBox = document.getElementById('errorMsg');
 
-            if (enteredKey === correctKey) {
+            if (enteredKey === 'mysecret123') {
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('mainPortal').style.display = 'block';
             } else {
                 errorBox.style.display = 'block';
-                inputField.value = '';
+                document.getElementById('accessKey').value = '';
             }
         }
 
-        function launchProxy() {
-            let url = document.getElementById('proxyUrl').value.trim();
-            if (!url) return;
+        // Listens for Enter key on inputs
+        document.getElementById('accessKey').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') checkKey();
+        });
+        document.getElementById('proxyUrl').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') launchProxy();
+        });
 
-            // Determines if it is a website link or search terms
-            const isUrl = url.includes('.') && !url.includes(' ');
+        function launchProxy() {
+            let searchInput = document.getElementById('proxyUrl').value.trim();
+            if (!searchInput) return;
+
+            let finalUrl = searchInput;
+            const isUrl = searchInput.includes('.') && !searchInput.includes(' ');
 
             if (isUrl) {
-                if (!url.startsWith('http://') && !url.startsWith('https://')) {
-                    url = 'https://' + url;
+                if (!searchInput.startsWith('http://') && !searchInput.startsWith('https://')) {
+                    finalUrl = 'https://' + searchInput;
                 }
             } else {
-                // Routes text searches securely through DuckDuckGo HTML layout
-                url = 'https://duckduckgo.com?q=' + encodeURIComponent(url);
+                finalUrl = 'https://duckduckgo.com?q=' + encodeURIComponent(searchInput);
             }
             
-            const proxyEndpoint = window.location.origin + '/proxy/' + url;
+            // Sends search queries safely via Render routing
+            const proxyEndpoint = window.location.origin + '/proxy/' + encodeURIComponent(finalUrl);
             launchApp(proxyEndpoint);
         }
 
         function launchProxyDirect(url) {
-            const proxyEndpoint = window.location.origin + '/proxy/' + url;
+            const proxyEndpoint = window.location.origin + '/proxy/' + encodeURIComponent(url);
             launchApp(proxyEndpoint);
         }
 
